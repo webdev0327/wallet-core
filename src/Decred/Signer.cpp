@@ -8,6 +8,7 @@
 
 #include "TransactionInput.h"
 #include "TransactionOutput.h"
+#include "../Bitcoin/SigHashType.h"
 
 #include "../BinaryCoding.h"
 #include "../Hash.h"
@@ -49,8 +50,7 @@ Result<Transaction> Signer::sign() {
     std::copy(std::begin(transaction.inputs), std::end(transaction.inputs),
               std::back_inserter(signedInputs));
 
-    const bool hashSingle =
-        ((input.hash_type() & ~TWBitcoinSigHashTypeAnyoneCanPay) == TWBitcoinSigHashTypeSingle);
+    const auto hashSingle = Bitcoin::hashTypeIsSingle(static_cast<enum TWBitcoinSigHashType>(input.hash_type()));
     for (auto i = 0; i < txPlan.utxos.size(); i += 1) {
         auto& utxo = txPlan.utxos[i];
 
@@ -108,7 +108,7 @@ Result<std::vector<Data>> Signer::signStep(Bitcoin::Script script, size_t index)
     std::vector<Data> keys;
     int required;
 
-    if (script.matchPayToPubkey(data)) {
+    if (script.matchPayToPublicKey(data)) {
         auto keyHash = TW::Hash::ripemd(TW::Hash::blake256(data));
         auto key = keyForPublicKeyHash(keyHash);
         if (key.empty()) {
@@ -121,7 +121,7 @@ Result<std::vector<Data>> Signer::signStep(Bitcoin::Script script, size_t index)
             return Result<std::vector<Data>>::failure("Failed to sign.");
         }
         return Result<std::vector<Data>>::success({signature});
-    } else if (script.matchPayToPubkeyHash(data)) {
+    } else if (script.matchPayToPublicKeyHash(data)) {
         auto key = keyForPublicKeyHash(data);
         if (key.empty()) {
             // Error: Missing keyxs

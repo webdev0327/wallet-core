@@ -22,12 +22,13 @@ This list is generated from [./coins.json](../coins.json)
 | 144     | XRP              | XRP    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ripple/info/logo.png" width="32" />       | <https://ripple.com/xrp>      |
 | 145     | Bitcoin Cash     | BCH    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoincash/info/logo.png" width="32" />  | <https://bitcoincash.org>     |
 | 148     | Stellar          | XLM    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/stellar/info/logo.png" width="32" />      | <https://stellar.org>         |
+| 156     | Bitcoin Gold     | BTG    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoingold/info/logo.png" width="32" />  | <https://bitcoingold.org>     |
 | 165     | Nano             | NANO   | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/nano/info/logo.png" width="32" />         | <https://nano.org>            |
 | 175     | Ravencoin        | RVN    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ravencoin/info/logo.png" width="32" />    | <https://ravencoin.org>       |
 | 178     | POA Network      | POA    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/poa/info/logo.png" width="32" />          | <https://poa.network>         |
 | 194     | EOS              | EOS    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/eos/info/logo.png" width="32" />          | <http://eos.io>               |
 | 195     | Tron             | TRX    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/tron/info/logo.png" width="32" />         | <https://tron.network>        |
-| 235     | FIO              | FIO    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/fio/info/logo.png" width="32" />          | <https://fio.foundation>      |
+| 235     | FIO              | FIO    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/fio/info/logo.png" width="32" />          | <https://fioprotocol.io>      |
 | 242     | Nimiq            | NIM    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/nimiq/info/logo.png" width="32" />        | <https://nimiq.com>           |
 | 283     | Algorand         | ALGO   | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/algorand/info/logo.png" width="32" />     | <https://www.algorand.com/>   |
 | 304     | IoTeX            | IOTX   | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/iotex/info/logo.png" width="32" />        | <https://iotex.io>            |
@@ -43,6 +44,7 @@ This list is generated from [./coins.json](../coins.json)
 | 461     | Filecoin         | FIL    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/filecoin/info/logo.png" width="32" />     | <https://filecoin.io/>        |
 | 500     | Theta            | THETA  | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/theta/info/logo.png" width="32" />        | <https://www.thetatoken.org>  |
 | 501     | Solana           | SOL    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png" width="32" />       | <https://solana.com>          |
+| 508     | Elrond           | ERD    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/elrond/info/logo.png" width="32" />       | <https://elrond.com/>         |
 | 714     | Binance          | BNB    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/info/logo.png" width="32" />      | <https://binance.org>         |
 | 818     | VeChain          | VET    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/vechain/info/logo.png" width="32" />      | <https://vechain.org>         |
 | 820     | Callisto         | CLO    | <img src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/callisto/info/logo.png" width="32" />     | <https://callisto.network>    |

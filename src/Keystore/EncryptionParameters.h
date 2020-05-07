@@ -46,7 +46,7 @@ struct EncryptionParameters {
     EncryptionParameters() = default;
 
     /// Initializes `EncryptionParameters` with standard values.
-    EncryptionParameters(Data encrypted, AESParameters cipherParams, boost::variant<ScryptParameters, PBKDF2Parameters> kdfParams, Data mac)
+    EncryptionParameters(const Data& encrypted, AESParameters cipherParams, boost::variant<ScryptParameters, PBKDF2Parameters> kdfParams, const Data& mac)
         : encrypted(std::move(encrypted))
         , cipherParams(std::move(cipherParams))
         , kdfParams(std::move(kdfParams))
@@ -54,13 +54,13 @@ struct EncryptionParameters {
 
     /// Initializes `EncryptionParameters` by encrypting data with a password
     /// using standard values.
-    EncryptionParameters(const std::string& password, Data data);
+    EncryptionParameters(const Data& password, const Data& data);
 
     /// Initializes `EncryptionParameters` with a JSON object.
     EncryptionParameters(const nlohmann::json& json);
 
     /// Decrypts the payload with the given password.
-    Data decrypt(const std::string& password) const;
+    Data decrypt(const Data& password) const;
 
     /// Saves `this` as a JSON object.
     nlohmann::json json() const;

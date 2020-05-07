@@ -101,6 +101,34 @@
         }
     },
     {
+        "id": "bitcoingold",
+        "name": "Bitcoin Gold",
+        "symbol": "BTG",
+        "decimals": 8,
+        "blockchain": "Bitcoin",
+        "derivationPath": "m/84'/156'/0'/0/0",
+        "curve": "secp256k1",
+        "publicKeyType": "secp256k1",
+        "p2pkhPrefix": 38,
+        "p2shPrefix": 23,
+        "hrp": "btg",
+        "publicKeyHasher": "sha256ripemd",
+        "base58Hasher": "sha256d",
+        "xpub": "zpub",
+        "xprv": "zprv",
+        "explorer": {
+            "url": "https://explorer.bitcoingold.org/insight",
+            "txPath": "/tx/",
+            "accountPath": "/address/"
+        },
+        "info": {
+            "url": "https://bitcoingold.org",
+            "client": "https://github.com/trezor/blockbook",
+            "clientPublic": "",
+            "clientDocs": "https://github.com/trezor/blockbook/blob/master/docs/api.md"
+        }
+    },
+    {
         "id": "callisto",
         "name": "Callisto",
         "symbol": "CLO",
@@ -571,9 +599,9 @@
         "xpub": "xpub",
         "xprv": "xprv",
         "explorer": {
-            "url": "https://sochain.com",
-            "txPath": "/tx/ZEC/",
-            "accountPath": "/address/ZEC/"
+            "url": "https://blockchair.com/zcash",
+            "txPath": "/transaction/",
+            "accountPath": "/address/"
         },
         "info": {
             "url": "https://z.cash",
@@ -682,7 +710,7 @@
         "curve": "ed25519",
         "publicKeyType": "ed25519",
         "explorer": {
-            "url": "https://stellarscan.io",
+            "url": "https://blockchair.com/stellar",
             "txPath": "/transaction/",
             "accountPath": "/account/"
         },
@@ -858,7 +886,6 @@
         "curve": "ed25519Blake2bNano",
         "publicKeyType": "ed25519Blake2b",
         "url": "https://nano.org",
-        "rpcNodeInfo": "https://github.com/nanocurrency/nano-node",
         "explorer": {
             "url": "https://nanocrawler.cc",
             "txPath": "/explorer/block/",
@@ -1073,18 +1100,17 @@
         "derivationPath": "m/44'/235'/0'/0/0",
         "curve": "secp256k1",
         "publicKeyType": "secp256k1",
-        "url": "https://fio.foundation",
-        "rpcNodeInfo": "https://fio.foundation",
+        "url": "https://fioprotocol.io/",
         "explorer": {
-            "url": "https://fio.foundation",
-            "txPath": "/?",
-            "accountPath": "/?"
+            "url": "https://explorer.fioprotocol.io",
+            "txPath": "/transaction/",
+            "accountPath": "/account/"
         },
         "info": {
-            "url": "https://fio.foundation",
-            "client": "https://fio.foundation",
-            "clientPublic": "",
-            "clientDocs": "https://fio.foundation"
+            "url": "https://fioprotocol.io",
+            "client": "https://github.com/fioprotocol/fio",
+            "clientPublic": "https://mainnet.fioprotocol.io",
+            "clientDocs": "https://developers.fioprotocol.io"
         }
     },
     {
@@ -1331,6 +1357,28 @@
             "client": "https://github.com/filecoin-project/lotus",
             "clientPublic": "",
             "clientDocs": "https://docs.lotu.sh"
+        }
+    },
+    {
+        "id": "elrond",
+        "name": "Elrond",
+        "symbol": "ERD",
+        "decimals": 18,
+        "blockchain": "ElrondNetwork",
+        "derivationPath": "m/44'/508'/0'/0'/0'",
+        "curve": "ed25519",
+        "publicKeyType": "ed25519",
+        "hrp": "erd",
+        "explorer": {
+            "url": "https://explorer.elrond.com",
+            "txPath": "/transactions/",
+            "accountPath": "/address/"
+        },
+        "info": {
+            "url": "https://elrond.com/",
+            "client": "https://github.com/ElrondNetwork/elrond-go",
+            "clientPublic": "https://api.elrond.com",
+            "clientDocs": "https://docs.elrond.com"
         }
     }
 ]

@@ -34,6 +34,9 @@ class CoinAddressDerivationTests: XCTestCase {
                 case .bitcoinCash:
                     let expectedResult = "bitcoincash:qpzl3jxkzgvfd9flnd26leud5duv795fnv7vuaha70"
                     AssetCoinDerivation(coin, expectedResult, derivedAddress, address)
+                case .bitcoinGold:
+                    let expectedResult = "btg1qwz9sed0k4neu6ycrudzkca6cnqe3zweq35hvtg"
+                    AssetCoinDerivation(coin, expectedResult, derivedAddress, address)
                 case .callisto:
                     let expectedResult = "0x3E6FFC80745E6669135a76F4A7ce6BCF02436e04"
                     AssetCoinDerivation(coin, expectedResult, derivedAddress, address)
@@ -189,6 +192,9 @@ class CoinAddressDerivationTests: XCTestCase {
                     AssetCoinDerivation(coin, expectedResult, derivedAddress, address)
                 case .filecoin:
                     let expectedResult = "f1zzykebxldfcakj5wdb5n3n7priul522fnmjzori"
+                    AssetCoinDerivation(coin, expectedResult, derivedAddress, address)
+                case .elrond:
+                    let expectedResult = "erd1jfcy8aeru6vlx4fe6h3pc3vlpe2cnnur5zetxdhp879yagq7vqvs8na4f8"
                     AssetCoinDerivation(coin, expectedResult, derivedAddress, address)
                 @unknown default:
                     fatalError()

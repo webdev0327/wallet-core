@@ -51,6 +51,7 @@
 #include "Waves/Entry.h"
 #include "Zcash/Entry.h"
 #include "Zilliqa/Entry.h"
+#include "Elrond/Entry.h"
 // end_of_coin_includes_marker_do_not_modify
 
 using namespace TW;
@@ -100,6 +101,7 @@ void setupDispatchers() {
         new Waves::Entry(),
         new Zcash::Entry(),
         new Zilliqa::Entry(),
+        new Elrond::Entry(),
     }; // end_of_coin_entries_marker_do_not_modify
 
     dispatchMap.clear();
@@ -147,7 +149,7 @@ bool TW::validateAddress(TWCoinType coin, const std::string& string) {
     return dispatcher->validateAddress(coin, string, p2pkh, p2sh, hrp);
 }
 
-std::string TW::normalizeAddress(TWCoinType coin, const std::string &address) {
+std::string TW::normalizeAddress(TWCoinType coin, const std::string& address) {
     if (!TW::validateAddress(coin, address)) {
         // invalid address, not normalizing
         return "";

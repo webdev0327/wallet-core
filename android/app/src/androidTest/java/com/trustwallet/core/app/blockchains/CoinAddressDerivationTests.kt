@@ -29,6 +29,7 @@ class CoinAddressDerivationTests {
         BINANCE -> assertEquals("bnb12vtaxl9952zm6rwf7v8jerq74pvaf77fcmvzhw", address)
         BITCOIN -> assertEquals("bc1quvuarfksewfeuevuc6tn0kfyptgjvwsvrprk9d", address)
         BITCOINCASH -> assertEquals("bitcoincash:qpzl3jxkzgvfd9flnd26leud5duv795fnv7vuaha70", address)
+        BITCOINGOLD -> assertEquals("btg1qwz9sed0k4neu6ycrudzkca6cnqe3zweq35hvtg", address)
         CALLISTO -> assertEquals("0x3E6FFC80745E6669135a76F4A7ce6BCF02436e04", address)
         DASH -> assertEquals("XqHiz8EXYbTAtBEYs4pWTHh7ipEDQcNQeT", address)
         DIGIBYTE -> assertEquals("dgb1qtjgmerfqwdffyf8ghcrkgy52cghsqptynmyswu", address)
@@ -83,5 +84,6 @@ class CoinAddressDerivationTests {
         CARDANO -> assertEquals("addr1snpa4z7ntyfszv7ckquprdw75w4qjqh0qmya9jtkpxxlzxghlqyvv7l0yjamh8fxraw06p3ua8sj2g2gv98v4849s43t9g2999kquuu5egnprk", address)
         NEO -> assertEquals("AT6w7PJvwPcSqHvtbNBY2aHPDv12eW5Uuf", address)
         FILECOIN -> assertEquals("f1zzykebxldfcakj5wdb5n3n7priul522fnmjzori", address)
+        ELROND -> assertEquals("erd1jfcy8aeru6vlx4fe6h3pc3vlpe2cnnur5zetxdhp879yagq7vqvs8na4f8", address)
     }
 }
