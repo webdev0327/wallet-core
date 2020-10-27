@@ -81,6 +81,9 @@ enum TWCoinType {
     TWCoinTypePolkadot = 354,
     TWCoinTypeFilecoin = 461,
     TWCoinTypeElrond = 508,
+    TWCoinTypeBandChain = 494,
+    TWCoinTypeSmartChainLegacy = 10000714,
+    TWCoinTypeSmartChain = 20000714,
 };
 
 /// Returns the blockchain for a coin type.
@@ -136,5 +139,9 @@ uint8_t TWCoinTypeP2shPrefix(enum TWCoinType coin);
 /// Static prefix for this coin type
 TW_EXPORT_PROPERTY
 uint8_t TWCoinTypeStaticPrefix(enum TWCoinType coin);
+
+/// Static prefix for this coin type
+TW_EXPORT_PROPERTY
+uint32_t TWCoinTypeSlip44Id(enum TWCoinType coin);
 
 TW_EXTERN_C_END

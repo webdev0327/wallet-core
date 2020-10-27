@@ -5,6 +5,7 @@
 // file LICENSE at the root of the source code distribution tree.
 
 #include "Bitcoin/Address.h"
+#include "Bitcoin/SigHashType.h"
 #include "HexCoding.h"
 #include "proto/Bitcoin.pb.h"
 #include "../interface/TWTestUtilities.h"
@@ -33,7 +34,7 @@ TEST(BitcoinCash, ValidAddress) {
     auto address = WRAP(TWAnyAddress, TWAnyAddressCreateWithString(string.get(), TWCoinTypeBitcoinCash));
     ASSERT_NE(address.get(), nullptr);
     
-    auto script = WRAP(TWBitcoinScript, TWBitcoinScriptBuildForAddress(string.get(), TWCoinTypeBitcoinCash));
+    auto script = WRAP(TWBitcoinScript, TWBitcoinScriptLockScriptForAddress(string.get(), TWCoinTypeBitcoinCash));
     ASSERT_FALSE(TWBitcoinScriptSize(script.get()) == 0);
 }
 
@@ -67,7 +68,7 @@ TEST(BitcoinCash, LockScript) {
     auto scriptData = WRAPD(TWBitcoinScriptData(script.get()));
     assertHexEqual(scriptData, "76a9146cfa0e96c34fce09c0e4e671fcd43338c14812e588ac");
 
-    auto script2 = WRAP(TWBitcoinScript, TWBitcoinScriptBuildForAddress(STRING("pzukqjmcyzrkh3gsqzdcy3e3d39cqxhl3g0f405k5l").get(), TWCoinTypeBitcoinCash));
+    auto script2 = WRAP(TWBitcoinScript, TWBitcoinScriptLockScriptForAddress(STRING("pzukqjmcyzrkh3gsqzdcy3e3d39cqxhl3g0f405k5l").get(), TWCoinTypeBitcoinCash));
     auto scriptData2 = WRAPD(TWBitcoinScriptData(script2.get()));
     assertHexEqual(scriptData2, "a914b9604b7820876bc510009b8247316c4b801aff8a87");
 }
@@ -87,8 +88,8 @@ TEST(BitcoinCash, ExtendedKeys) {
 
 TEST(BitcoinCash, DeriveFromXPub) {
     auto xpub = STRING("xpub6CEHLxCHR9sNtpcxtaTPLNxvnY9SQtbcFdov22riJ7jmhxmLFvXAoLbjHSzwXwNNuxC1jUP6tsHzFV9rhW9YKELfmR9pJaKFaM8C3zMPgjw");
-    auto pubKey2 = TWHDWalletGetPublicKeyFromExtended(xpub.get(), STRING("m/44'/145'/0'/0/2").get());
-    auto pubKey9 = TWHDWalletGetPublicKeyFromExtended(xpub.get(), STRING("m/44'/145'/0'/0/9").get());
+    auto pubKey2 = TWHDWalletGetPublicKeyFromExtended(xpub.get(), TWCoinTypeBitcoinCash, STRING("m/44'/145'/0'/0/2").get());
+    auto pubKey9 = TWHDWalletGetPublicKeyFromExtended(xpub.get(), TWCoinTypeBitcoinCash, STRING("m/44'/145'/0'/0/9").get());
 
     auto address2 = WRAP(TWAnyAddress, TWAnyAddressCreateWithPublicKey(pubKey2, TWCoinTypeBitcoinCash));
     auto address2String = WRAPS(TWAnyAddressDescription(address2.get()));
@@ -107,7 +108,7 @@ TEST(BitcoinCash, SignTransaction) {
     // https://blockchair.com/bitcoin-cash/transaction/96ee20002b34e468f9d3c5ee54f6a8ddaa61c118889c4f35395c2cd93ba5bbb4
 
     auto input = Proto::SigningInput();
-    input.set_hash_type(TWBitcoinSigHashTypeFork | TWBitcoinSigHashTypeAll);
+    input.set_hash_type(hashTypeForCoin(TWCoinTypeBitcoinCash));
     input.set_amount(amount);
     input.set_byte_fee(1);
     input.set_to_address("1Bp9U1ogV3A14FMvKbRJms7ctyso4Z4Tcx");
@@ -129,6 +130,10 @@ TEST(BitcoinCash, SignTransaction) {
     Proto::SigningOutput output;
     ANY_SIGN(input, TWCoinTypeBitcoinCash);
 
+    EXPECT_EQ(output.transaction().outputs_size(), 2);
+    EXPECT_EQ(output.transaction().outputs(0).value(), amount);
+    EXPECT_EQ(output.transaction().outputs(1).value(), 4325);
+    EXPECT_EQ(output.encoded().length(), 226);
     ASSERT_EQ(hex(output.encoded()),
         "01000000"
         "01"

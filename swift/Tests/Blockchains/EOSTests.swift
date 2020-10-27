@@ -5,7 +5,7 @@
 // file LICENSE at the root of the source code distribution tree.
 
 import XCTest
-import TrustWalletCore
+import WalletCore
 
 class EOSTests: XCTestCase {
 
@@ -55,8 +55,6 @@ class EOSTests: XCTestCase {
 
     func testSigning() throws {
         let ouptut: EOSSigningOutput = AnySigner.sign(input: signingInput, coin: .eos)
-        print(signingInput.privateKey.hexString)
-        print(try! signingInput.jsonString())
 
         let expectedJSON = """
         {

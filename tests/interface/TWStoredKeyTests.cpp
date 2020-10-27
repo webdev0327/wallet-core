@@ -126,6 +126,7 @@ TEST(TWStoredKey, addressAddRemove) {
 
     TWStoredKeyAddAccount(key,
         WRAPS(TWStringCreateWithUTF8Bytes(addressAdd)).get(),
+        TWCoinTypeBitcoin,
         WRAPS(TWStringCreateWithUTF8Bytes(derivationPath)).get(),
         WRAPS(TWStringCreateWithUTF8Bytes(extPubKeyAdd)).get());
     EXPECT_EQ(TWStoredKeyAccountCount(key), 1);
@@ -156,7 +157,7 @@ TEST(TWStoredKey, storeAndImportJSON) {
     ifstream ifs(outFileName);
     // get length of file:
     ifs.seekg (0, ifs.end);
-    int length = ifs.tellg();
+    auto length = ifs.tellg();
     ifs.seekg (0, ifs.beg);
     EXPECT_TRUE(length > 20);
 

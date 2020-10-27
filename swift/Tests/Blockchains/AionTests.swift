@@ -4,7 +4,7 @@
 // terms governing use, modification, and redistribution, is contained in the
 // file LICENSE at the root of the source code distribution tree.
 
-import TrustWalletCore
+import WalletCore
 import XCTest
 
 class AionTests: XCTestCase {
@@ -23,6 +23,7 @@ class AionTests: XCTestCase {
             $0.gasLimit = Data(hexString: "5208")!
             $0.toAddress = "0xa082c3de528b7807dc27ad66debb16d4cfe4054209398cee619dd95955063d1e"
             $0.amount = Data(hexString: "2710")!
+            $0.timestamp = 155157377101
             $0.privateKey = Data(hexString: "db33ffdf82c7ba903daf68d961d3c23c20471a8ce6b408e52d579fd8add80cc9")!
         }
 

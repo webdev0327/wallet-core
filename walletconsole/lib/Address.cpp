@@ -79,20 +79,38 @@ bool Address::addrDefault(const string& coinid, string& res) {
     return true;
 }
 
-bool Address::addrDP(const string& coinid, const string& derivPath, string& res) {
+bool Address::deriveFromPath(const string& coinid, const string& derivPath, string& res) {
+    Coin coin;
+    if (!_coins.findCoin(coinid, coin)) { return false; }
+    TWCoinType ctype = (TWCoinType)coin.c;
+
     DerivationPath dp(derivPath);
     // get the private key
     string mnemo = _keys.getMnemo();
     assert(mnemo.length() > 0); // a mnemonic is always set
     HDWallet wallet(mnemo, "");
-    PrivateKey priKey = wallet.getKey(dp);
+    PrivateKey priKey = wallet.getKey(ctype, dp);
 
+    // derive address
+    res = TW::deriveAddress(ctype, priKey);
+    return true;
+}
+
+bool Address::deriveFromXpubIndex(const string& coinid, const string& xpub, const string& accountIndex, string& res) {
     Coin coin;
     if (!_coins.findCoin(coinid, coin)) { return false; }
     TWCoinType ctype = (TWCoinType)coin.c;
 
-    // derive address
-    res = TW::deriveAddress(ctype, priKey);
+    int index = std::stoi(accountIndex);
+
+    // Derivation path: use default, but only elements 4&5 (change&address) are used
+    DerivationPath dp(coin.derivPath);
+    dp.setChange(0);
+    dp.setAddress(index);
+
+    const auto publicKey = HDWallet::getPublicKeyFromExtended(xpub, ctype, dp);
+    if (!publicKey) { return false; }
+    res = TW::deriveAddress(ctype, publicKey.value());
     return true;
 }
 

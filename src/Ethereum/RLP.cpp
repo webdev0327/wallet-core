@@ -7,11 +7,17 @@
 #include "RLP.h"
 
 #include "../Data.h"
+#include "../uint256.h"
+#include "../BinaryCoding.h"
+#include "../HexCoding.h"
 
+#include <nlohmann/json.hpp>
 #include <tuple>
 
 using namespace TW;
 using namespace TW::Ethereum;
+
+using json = nlohmann::json;
 
 Data RLP::encode(const uint256_t& value) noexcept {
     using boost::multiprecision::cpp_int;
@@ -74,27 +80,27 @@ Data RLP::encodeHeader(uint64_t size, uint8_t smallTag, uint8_t largeTag) noexce
 
 Data RLP::putint(uint64_t i) noexcept {
     // clang-format off
-    if (i < (1l << 8))
+    if (i < (1ULL << 8))
         return {static_cast<uint8_t>(i)};
-    if (i < (1l << 16))
+    if (i < (1ULL << 16))
         return {
             static_cast<uint8_t>(i >> 8),
             static_cast<uint8_t>(i),
         };
-    if (i < (1l << 24))
+    if (i < (1ULL << 24))
         return {
             static_cast<uint8_t>(i >> 16),
             static_cast<uint8_t>(i >> 8),
             static_cast<uint8_t>(i),
         };
-    if (i < (1l << 32))
+    if (i < (1ULL << 32))
         return {
             static_cast<uint8_t>(i >> 24),
             static_cast<uint8_t>(i >> 16),
             static_cast<uint8_t>(i >> 8),
             static_cast<uint8_t>(i),
         };
-    if (i < (1l << 40))
+    if (i < (1ULL << 40))
         return {
             static_cast<uint8_t>(i >> 32),
             static_cast<uint8_t>(i >> 24),
@@ -102,7 +108,7 @@ Data RLP::putint(uint64_t i) noexcept {
             static_cast<uint8_t>(i >> 8),
             static_cast<uint8_t>(i),
         };
-    if (i < (1l << 48))
+    if (i < (1ULL << 48))
         return {
             static_cast<uint8_t>(i >> 40),
             static_cast<uint8_t>(i >> 32),
@@ -111,7 +117,7 @@ Data RLP::putint(uint64_t i) noexcept {
             static_cast<uint8_t>(i >> 8),
             static_cast<uint8_t>(i),
         };
-    if (i < (1l << 56))
+    if (i < (1ULL << 56))
         return {
             static_cast<uint8_t>(i >> 48),
             static_cast<uint8_t>(i >> 40),
@@ -133,4 +139,138 @@ Data RLP::putint(uint64_t i) noexcept {
         static_cast<uint8_t>(i),
     };
     // clang-format on
+}
+
+Data RLP::decodeRawTransaction(const Data& data) {
+    auto decoded = decode(data).decoded;
+    if (decoded.size() < 9) {
+        return {};
+    }
+    auto result = json {
+        {"nonce", hexEncoded(decoded[0])},
+        {"gasPrice", hexEncoded(decoded[1])},
+        {"gas", hexEncoded(decoded[2])},
+        {"to", hexEncoded(decoded[3])},
+        {"value", hexEncoded(decoded[4])},
+        {"input", hexEncoded(decoded[5])},
+        {"v", hexEncoded(decoded[6])},
+        {"r", hexEncoded(decoded[7])},
+        {"s", hexEncoded(decoded[8])},
+    }.dump();
+    return Data(result.begin(), result.end());
+}
+
+static RLP::DecodedItem decodeList(const Data& input) {
+    RLP::DecodedItem item;
+    auto remainder = input;
+    while(true) {
+        auto listItem = RLP::decode(remainder);
+        item.decoded.push_back(listItem.decoded[0]);
+        if (listItem.remainder.size() == 0) {
+            break;
+        } else {
+            remainder = listItem.remainder;
+        }
+    }
+    return item;
+}
+
+static uint64_t decodeLength(const Data& data) {
+    size_t index = 0;
+    auto decodedLen = decodeVarInt(data, index);
+    if (!std::get<0>(decodedLen)) {
+        throw std::invalid_argument("can't decode length of string/list length");
+    }
+    return std::get<1>(decodedLen);
+}
+
+RLP::DecodedItem RLP::decode(const Data& input) {
+    if (input.size() == 0) {
+        throw std::invalid_argument("can't decode empty rlp data");
+    }
+    RLP::DecodedItem item;
+    auto inputLen = input.size();
+    auto prefix = input[0];
+    if (prefix <= 0x7f) {
+        // a single byte whose value is in the [0x00, 0x7f] range, that byte is its own RLP encoding.
+        item.decoded.push_back(Data{input[0]});
+        item.remainder = Data(input.begin() + 1, input.end());
+        return item;
+    }
+    if (prefix <= 0xb7) {
+        // short string
+        // string is 0-55 bytes long. A single byte with value 0x80 plus the length of the string followed by the string
+        // The range of the first byte is [0x80, 0xb7]
+
+        // empty string
+        if (prefix == 0x80) {
+            item.decoded.push_back(Data());
+            item.remainder = Data(input.begin() + 1, input.end());
+            return item;
+        }
+
+        auto strLen = prefix - 0x80;
+        if (strLen == 1 && input[1] <= 0x7f) {
+            throw std::invalid_argument("single byte below 128 must be encoded as itself");
+        }
+
+        item.decoded.push_back(subData(input, 1, strLen));
+        item.remainder = Data(input.begin() + 1 + strLen, input.end());
+
+        return item;
+    } 
+    if (prefix <= 0xbf) {
+        // long string
+        auto lenOfStrLen = prefix - 0xb7;
+        auto strLen = static_cast<size_t>(decodeLength(subData(input, 1, lenOfStrLen)));
+        if (inputLen < lenOfStrLen || inputLen < lenOfStrLen + strLen) {
+            throw std::invalid_argument("Invalid rlp encoding length");
+        }
+        auto data = subData(input, 1 + lenOfStrLen, strLen);
+        item.decoded.push_back(data);
+        item.remainder = Data(input.begin() + 1 + lenOfStrLen + strLen, input.end());
+        return item;
+    } 
+    if (prefix <= 0xf7) {
+        // a list between  0-55 bytes long
+        auto listLen = prefix - 0xc0;
+        if (inputLen < listLen) {
+            throw std::invalid_argument("Invalid rlp string length");
+        }
+        
+        // empty list
+        if (listLen == 0) {
+            item.remainder = Data(input.begin() + 1, input.end());
+            return item;
+        }
+
+        // decode list
+        auto listItem = decodeList(subData(input, 1, listLen));
+        for (auto& data : listItem.decoded) {
+            item.decoded.push_back(data);
+        }
+        item.remainder = Data(input.begin() + 1 + listLen, input.end());
+        return item;
+    } 
+    if (prefix <= 0xff) {
+        auto lenOfListLen = prefix - 0xf7;
+        auto listLen = static_cast<size_t>(decodeLength(subData(input, 1, lenOfListLen)));
+        if (inputLen < lenOfListLen || inputLen < lenOfListLen + listLen) {
+            throw std::invalid_argument("Invalid rlp list length");
+        }
+        if (input[1] == 0) {
+            throw std::invalid_argument("multi-byte length must have no leading zero");
+        }
+        if (listLen < 56) {
+            throw std::invalid_argument("length below 56 must be encoded in one byte");
+        }
+        // decode list
+        auto listItem = decodeList(subData(input, 1 + lenOfListLen, listLen));
+        for (auto& data : listItem.decoded) {
+            item.decoded.push_back(data);
+        }
+        item.remainder = Data(input.begin() + 1 + lenOfListLen + listLen, input.end());
+        return item;
+    }
+    throw std::invalid_argument("input don't conform RLP encoding form");
 }
