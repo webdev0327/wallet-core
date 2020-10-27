@@ -21,6 +21,7 @@
 #include "../NEO/Address.h"
 #include "../Nano/Address.h"
 #include "../Elrond/Address.h"
+#include "../NEAR/Address.h"
 
 #include "../Coin.h"
 #include "../HexCoding.h"
@@ -76,6 +77,7 @@ TWData* _Nonnull TWAnyAddressData(struct TWAnyAddress* _Nonnull address) {
     case TWCoinTypeCosmos:
     case TWCoinTypeKava:
     case TWCoinTypeTerra:
+    case TWCoinTypeBandChain:
     case TWCoinTypeIoTeX: {
         Cosmos::Address addr;
         if (!Cosmos::Address::decode(string, addr)) {
@@ -142,6 +144,8 @@ TWData* _Nonnull TWAnyAddressData(struct TWAnyAddress* _Nonnull address) {
     case TWCoinTypeTheta:
     case TWCoinTypeWanchain:
     case TWCoinTypeAion:
+    case TWCoinTypeSmartChainLegacy:
+    case TWCoinTypeSmartChain:
         data = parse_hex(string);
         break;
 
@@ -192,6 +196,12 @@ TWData* _Nonnull TWAnyAddressData(struct TWAnyAddress* _Nonnull address) {
             data = addr.getKeyHash();
         }
         
+        break;
+    }
+
+    case TWCoinTypeNEAR: {
+        auto addr = NEAR::Address(string);
+        data = Data(addr.bytes.begin(), addr.bytes.end());
         break;
     }
 

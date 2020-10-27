@@ -5,6 +5,7 @@
 // file LICENSE at the root of the source code distribution tree.
 
 #pragma once
+
 #include "TWBase.h"
 
 TW_EXTERN_C_BEGIN
@@ -18,6 +19,7 @@ enum TWCurve {
     TWCurveCurve25519             /* "curve25519" */,
     TWCurveNIST256p1              /* "nist256p1" */,
     TWCurveED25519Extended        /* "ed25519-cardano-seed" */,
+    TWCurveNone
 };
 
 TW_EXTERN_C_END

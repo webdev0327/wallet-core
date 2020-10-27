@@ -5,6 +5,7 @@
 // file LICENSE at the root of the source code distribution tree.
 
 #pragma once
+
 #include "TWBase.h"
 
 TW_EXTERN_C_BEGIN
@@ -20,6 +21,7 @@ enum TWEthereumChainID {
     TWEthereumChainIDVeChain = 74,
     TWEthereumChainIDThunderToken = 108,
     TWEthereumChainIDTomoChain = 88,
+    TWEthereumChainIDBinanceSmartChain = 56,
 };
 
 TW_EXTERN_C_END

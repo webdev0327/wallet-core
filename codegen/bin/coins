@@ -8,12 +8,8 @@ require 'json'
 def self.format_name(n)
   formatted = n
   formatted = formatted.sub(/^([a-z]+)/, &:upcase)
-  formatted = formatted.sub(/\s/, '')
+  formatted = formatted.gsub(/\s/, '')
   formatted
-end
-
-def self.coin_type(path)
-  path.split('/')[2].chomp("'")
 end
 
 def self.coin_img(coin)
@@ -29,8 +25,7 @@ def self.explorer_account_url(c)
 end
 
 json_string = File.read('coins.json')
-coins = JSON.parse(json_string).sort_by { |x| x['name'] }
-coins_md = coins.sort_by { |x| Integer(coin_type(x['derivationPath'])) }
+coins = JSON.parse(json_string).sort_by { |x| x['coinId'] }
 
 erbs = [
   {'template' => 'CoinInfoData.cpp.erb', 'folder' => 'src/Generated', 'file' => 'CoinInfoData.cpp'},

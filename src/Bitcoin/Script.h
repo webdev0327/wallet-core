@@ -13,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <cassert>
 
 namespace TW::Bitcoin {
 
@@ -29,7 +30,7 @@ class Script {
     Script(It begin, It end) : bytes(begin, end) {}
 
     /// Initializaes a script with a collection of raw bytes by moving.
-    explicit Script(Data&& bytes) : bytes(bytes) {}
+    explicit Script(const Data& bytes) : bytes(bytes) {}
 
     /// Whether the script is empty.
     bool empty() const { return bytes.empty(); }
@@ -83,9 +84,9 @@ class Script {
     /// Builds a pay-to-witness-script-hash (P2WSH) script from a script hash.
     static Script buildPayToWitnessScriptHash(const Data& scriptHash);
 
-    /// Builds a pay-to-public-key-hash (P2PKH) script appropriate for the given
+    /// Builds a appropriate lock script for the given
     /// address.
-    static Script buildForAddress(const std::string& address, enum TWCoinType coin);
+    static Script lockScriptForAddress(const std::string& address, enum TWCoinType coin);
 
     /// Encodes the script.
     void encode(Data& data) const;

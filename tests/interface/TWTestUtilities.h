@@ -19,11 +19,11 @@
 #define STRING(x) std::shared_ptr<TWString>(TWStringCreateWithUTF8Bytes(x), TWStringDelete)
 #define DATA(x) std::shared_ptr<TWData>(TWDataCreateWithHexString(STRING(x).get()), TWDataDelete)
 
-inline void assertStringsEqual(std::shared_ptr<TWString>& string, const char* expected) {
+inline void assertStringsEqual(const std::shared_ptr<TWString>& string, const char* expected) {
     ASSERT_STREQ(TWStringUTF8Bytes(string.get()), expected);
 }
 
-inline void assertHexEqual(std::shared_ptr<TWData>& data, const char* expected) {
+inline void assertHexEqual(const std::shared_ptr<TWData>& data, const char* expected) {
     auto hex = WRAPS(TWStringCreateWithHexData(data.get()));
     assertStringsEqual(hex, expected);
 }
@@ -40,14 +40,21 @@ std::string getTestTempDir(void);
             auto inputData = input.SerializeAsString();\
             auto inputTWData = WRAPD(TWDataCreateWithBytes((const uint8_t *)inputData.data(), inputData.size()));\
             auto outputTWData = WRAPD(TWAnySignerSign(inputTWData.get(), coin));\
-            output.ParseFromArray(TWDataBytes(outputTWData.get()), TWDataSize(outputTWData.get()));\
+            output.ParseFromArray(TWDataBytes(outputTWData.get()), static_cast<int>(TWDataSize(outputTWData.get())));\
+        }
+#define ANY_ENCODE(input, coin) \
+        {\
+            auto inputData = input.SerializeAsString();\
+            auto inputTWData = WRAPD(TWDataCreateWithBytes((const uint8_t *)inputData.data(), inputData.size()));\
+            auto encodedData = WRAPD(TWAnySignerEncode(inputTWData.get(), coin));\
+            encoded = TW::data(TWDataBytes(encodedData.get()), static_cast<int>(TWDataSize(encodedData.get())));\
         }
 #define ANY_PLAN(input, output, coin) \
         {\
             auto inputData = input.SerializeAsString();\
             auto inputTWData = WRAPD(TWDataCreateWithBytes((const uint8_t *)inputData.data(), inputData.size()));\
             auto outputTWData = WRAPD(TWAnySignerPlan(inputTWData.get(), coin));\
-            output.ParseFromArray(TWDataBytes(outputTWData.get()), TWDataSize(outputTWData.get()));\
+            output.ParseFromArray(TWDataBytes(outputTWData.get()), static_cast<int>(TWDataSize(outputTWData.get())));\
         }
 #define DUMP_PROTO(input) \
         { \

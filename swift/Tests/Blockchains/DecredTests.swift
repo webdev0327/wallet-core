@@ -5,7 +5,7 @@
 // file LICENSE at the root of the source code distribution tree.
 
 import XCTest
-import TrustWalletCore
+import WalletCore
 
 class DecredTests: XCTestCase {
 
@@ -22,7 +22,11 @@ class DecredTests: XCTestCase {
 
     func testDeriveFromDpub() {
         let dpub = "dpubZFUmm9oh5zmQkR2Tr2AXS4tCkTWg4B27SpCPFkapZrrAqgU1EwgEFgrmi6EnLGXhak86yDHhXPxFAnGU58W5S4e8NCKG1ASUVaxwRqqNdfP"
-        let pubkey0 = HDWallet.derive(from: dpub, at: DerivationPath(purpose: .bip44, coinType: .decred, account: 0, change: 0, address: 0))!
+        let pubkey0 = HDWallet.getPublicKeyFromExtended(
+            extended: dpub,
+            coin: .decred,
+            derivationPath: DerivationPath(purpose: .bip44, coin: CoinType.decred.slip44Id, account: 0, change: 0, address: 0).description
+        )!
 
         XCTAssertEqual(AnyAddress(publicKey: pubkey0, coin: .decred).description, "DsksmLD2wDoA8g8QfFvm99ASg8KsZL8eJFd")
     }
@@ -33,8 +37,8 @@ class DecredTests: XCTestCase {
 
         let txHash = Data(Data(hexString: "5015d14dcfd78998cfa13e0325798a74d95bbe75f167a49467303f70dde9bffd")!.reversed())
         let utxoAddress = CoinType.decred.deriveAddress(privateKey: key)
-        let script = BitcoinScript.buildForAddress(address: utxoAddress, coin: .decred)
-        print(txHash.hexString)
+        let script = BitcoinScript.lockScriptForAddress(address: utxoAddress, coin: .decred)
+
         let amount = Int64(10_000_000)
 
         let utxo = BitcoinUnspentTransaction.with {
@@ -45,7 +49,7 @@ class DecredTests: XCTestCase {
         }
 
         let input = BitcoinSigningInput.with {
-            $0.hashType = BitcoinSigHashType.all.rawValue
+            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: .decred)
             $0.amount = amount
             $0.byteFee = 1
             $0.toAddress = "Dsesp1V6DZDEtcq2behmBVKdYqKMdkh96hL"

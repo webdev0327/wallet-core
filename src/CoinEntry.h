@@ -22,7 +22,7 @@ namespace TW {
 class CoinEntry {
 public:
     // Report the coin types this implementation is responsible of
-    virtual std::vector<TWCoinType> coinTypes() const = 0;
+    virtual const std::vector<TWCoinType> coinTypes() const = 0;
     virtual bool validateAddress(TWCoinType coin, const std::string& address, TW::byte p2pkh, TW::byte p2sh, const char* hrp) const = 0;
     // normalizeAddress is optional, it may leave this default, no-change implementation
     virtual std::string normalizeAddress(TWCoinType coin, const std::string& address) const { return address; }
@@ -32,6 +32,9 @@ public:
     virtual bool supportsJSONSigning() const { return false; }
     // It is optional, Signing JSON input with private key
     virtual std::string signJSON(TWCoinType coin, const std::string& json, const Data& key) const { return ""; }
+    // Sign and encode broadcastable raw transaction
+    virtual void encodeRawTx(TWCoinType coin, const Data& dataIn, Data& dataOut) const { return; }
+    virtual void decodeRawTx(TWCoinType coin, const Data& dataIn, Data& dataOut) const { return; }
     // Planning, for UTXO chains, in preparation for signing
     // It is optional, only UTXO chains need it, default impl. leaves empty result.
     virtual void plan(TWCoinType coin, const Data& dataIn, Data& dataOut) const { return; }
@@ -46,6 +49,14 @@ void signTemplate(const Data& dataIn, Data& dataOut) {
     input.ParseFromArray(dataIn.data(), (int)dataIn.size());
     auto serializedOut = Signer::sign(input).SerializeAsString();
     dataOut.insert(dataOut.end(), serializedOut.begin(), serializedOut.end());
+}
+
+template <typename Signer, typename Input>
+void encodeTemplate(const Data& dataIn, Data& dataOut) {
+    auto input = Input();
+    input.ParseFromArray(dataIn.data(), (int)dataIn.size());
+    auto encoded = Signer::sign(input).encoded();
+    dataOut.insert(dataOut.end(), encoded.begin(), encoded.end());
 }
 
 // Note: use output parameter to avoid unneeded copies

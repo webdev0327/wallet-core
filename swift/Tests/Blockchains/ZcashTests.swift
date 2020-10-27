@@ -5,7 +5,7 @@
 // file LICENSE at the root of the source code distribution tree.
 
 import XCTest
-import TrustWalletCore
+import WalletCore
 
 class ZcashTests: XCTestCase {
 
@@ -34,7 +34,11 @@ class ZcashTests: XCTestCase {
 
     func testDeriveFromXpub() {
         let xpub = "xpub6C7HhMqpir3KBA6ammv5B58RT3XFTJqoZFoj3J56dz9XwehZ2puSH38ERtnz7HaXGxaZP8AHT4M2bSRHpBXUZrbsJ2xg3xs53DGKYCqj8mr"
-        let pubkey = HDWallet.derive(from: xpub, at: DerivationPath(purpose: zcash.purpose, coinType: zcash))!
+        let pubkey = HDWallet.getPublicKeyFromExtended(
+            extended: xpub,
+            coin: .zcash,
+            derivationPath: DerivationPath(purpose: zcash.purpose, coin: zcash.slip44Id).description
+        )!
         let address = AnyAddress(publicKey: pubkey, coin: .zcash)
 
         XCTAssertEqual(address.description, "t1TKCtCETHPrAdA6eY1fdhhnTkTmb371oPt")
@@ -51,7 +55,7 @@ class ZcashTests: XCTestCase {
             }
         ]
         let input = BitcoinSigningInput.with {
-            $0.hashType = BitcoinSigHashType.all.rawValue
+            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: .zcash)
             $0.amount = 488000
             $0.toAddress = "t1QahNjDdibyE4EdYkawUSKBBcVTSqv64CS"
             $0.coinType = CoinType.zcash.rawValue

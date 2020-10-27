@@ -5,7 +5,7 @@
 // file LICENSE at the root of the source code distribution tree.
 
 import XCTest
-import TrustWalletCore
+import WalletCore
 
 class GroestlcoinTransactionSignerTests: XCTestCase {
     override func setUp() {
@@ -14,7 +14,7 @@ class GroestlcoinTransactionSignerTests: XCTestCase {
 
     func testSignP2WPKH() throws {
         var input = BitcoinSigningInput.with {
-            $0.hashType = BitcoinSigHashType.all.rawValue
+            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: .groestlcoin)
             $0.amount = 2500
             $0.byteFee = 1
             $0.toAddress = "31inaRqambLsd9D7Ke4USZmGEVd3PHkh7P"
@@ -34,8 +34,13 @@ class GroestlcoinTransactionSignerTests: XCTestCase {
         let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .groestlcoin)
 
         XCTAssertEqual(plan.amount, 2500)
-        XCTAssertEqual(plan.fee, 226)
-        XCTAssertEqual(plan.change, 2048)
+        XCTAssertEqual(plan.fee, 145)
+        XCTAssertEqual(plan.change, 2129)
+
+        // Supply plan for signing, to match fee of previously-created real TX
+        input.plan = plan
+        input.plan.fee = 226
+        input.plan.change = 2048
 
         // https://blockbook.groestlcoin.org/tx/40b539c578934c9863a93c966e278fbeb3e67b0da4eb9e3030092c1b717e7a64
         let output: BitcoinSigningOutput = AnySigner.sign(input: input, coin: .groestlcoin)
@@ -62,7 +67,7 @@ class GroestlcoinTransactionSignerTests: XCTestCase {
 
     func testSignP2PKH() throws {
         var input = BitcoinSigningInput.with {
-            $0.hashType = BitcoinSigHashType.all.rawValue
+            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: .groestlcoin)
             $0.amount = 2500
             $0.byteFee = 1
             $0.toAddress = "grs1qw4teyraux2s77nhjdwh9ar8rl9dt7zww8r6lne"
@@ -82,8 +87,13 @@ class GroestlcoinTransactionSignerTests: XCTestCase {
         let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .groestlcoin)
 
         XCTAssertEqual(plan.amount, 2500)
-        XCTAssertEqual(plan.fee, 226)
-        XCTAssertEqual(plan.change, 2274)
+        XCTAssertEqual(plan.fee, 221)
+        XCTAssertEqual(plan.change, 2279)
+
+        // Supply plan for signing, to match fee of previously-created real TX
+        input.plan = plan
+        input.plan.fee = 226
+        input.plan.change = 2274
 
         // https://blockbook.groestlcoin.org/tx/74a0dd12bc178cfcc1e0982a2a5b2c01a50e41abbb63beb031bcd21b3e28eac0
         let output: BitcoinSigningOutput = AnySigner.sign(input: input, coin: .groestlcoin)
@@ -108,7 +118,7 @@ class GroestlcoinTransactionSignerTests: XCTestCase {
 
     func testSignP2SH_P2WPKH() throws {
         var input = BitcoinSigningInput.with {
-            $0.hashType = BitcoinSigHashType.all.rawValue
+            $0.hashType = BitcoinScript.hashTypeForCoin(coinType: .groestlcoin)
             $0.amount = 5000
             $0.byteFee = 1
             $0.toAddress = "Fj62rBJi8LvbmWu2jzkaUX1NFXLEqDLoZM"
@@ -130,8 +140,13 @@ class GroestlcoinTransactionSignerTests: XCTestCase {
         let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .groestlcoin)
 
         XCTAssertEqual(plan.amount, 5000)
-        XCTAssertEqual(plan.fee, 226)
-        XCTAssertEqual(plan.change, 4774)
+        XCTAssertEqual(plan.fee, 167)
+        XCTAssertEqual(plan.change, 4833)
+
+        // Supply plan for signing, to match fee of previously-created real TX
+        input.plan = plan
+        input.plan.fee = 226
+        input.plan.change = 4774
 
         // https://blockbook.groestlcoin.org/tx/8f4ecc7844e19aa1d3183e47eee89d795f9e7c875a55ec0203946d6c9eb06895
         let output: BitcoinSigningOutput = AnySigner.sign(input: input, coin: .groestlcoin)

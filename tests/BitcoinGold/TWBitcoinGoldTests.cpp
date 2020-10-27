@@ -18,6 +18,7 @@
 #include "Bitcoin/Transaction.h"
 #include "Bitcoin/TransactionBuilder.h"
 #include "Bitcoin/TransactionSigner.h"
+#include "Bitcoin/SigHashType.h"
 #include "HexCoding.h"
 #include "../interface/TWTestUtilities.h"
 
@@ -25,11 +26,11 @@ using namespace TW;
 using namespace TW::Bitcoin;
 
 TEST(TWBitcoinGoldScript, LockScriptTest) {
-    auto script = WRAP(TWBitcoinScript, TWBitcoinScriptBuildForAddress(STRING("btg1q6572ulr0kmywle8a30lvagm9xsg9k9n5cmzfdj").get(), TWCoinTypeBitcoinGold));
+    auto script = WRAP(TWBitcoinScript, TWBitcoinScriptLockScriptForAddress(STRING("btg1q6572ulr0kmywle8a30lvagm9xsg9k9n5cmzfdj").get(), TWCoinTypeBitcoinGold));
     auto scriptData = WRAPD(TWBitcoinScriptData(script.get()));
     assertHexEqual(scriptData, "0014d53cae7c6fb6c8efe4fd8bfecea36534105b1674");
 
-    auto script2 = WRAP(TWBitcoinScript, TWBitcoinScriptBuildForAddress(STRING("btg1qawhpp9gv3g662phqufjmj2ps2ge7sq4thy5g07").get(), TWCoinTypeBitcoinGold));
+    auto script2 = WRAP(TWBitcoinScript, TWBitcoinScriptLockScriptForAddress(STRING("btg1qawhpp9gv3g662phqufjmj2ps2ge7sq4thy5g07").get(), TWCoinTypeBitcoinGold));
     auto scriptData2 = WRAPD(TWBitcoinScriptData(script2.get()));
     assertHexEqual(scriptData2, "0014ebae10950c8a35a506e0e265b928305233e802ab");
 }
@@ -50,8 +51,8 @@ TEST(BitcoinGoldKey, ExtendedKeys) {
 
 TEST(BitcoinGoldKey, DeriveFromZPub) {
     auto zpub = STRING("zpub6rAU34KLySeCp1KDjD3hayCBXg49uH3G8iDzPovtGWD3eabbfAWSRMsjVyfuRfCCquiKTD6YV42nHUBtwh2TbVPvWqxrGuyEvHN17c3XUXw");
-    auto pubKey2 = TWHDWalletGetPublicKeyFromExtended(zpub.get(), STRING("m/84'/156'/0'/0/2").get());
-    auto pubKey9 = TWHDWalletGetPublicKeyFromExtended(zpub.get(), STRING("m/84'/156'/0'/0/9").get());
+    auto pubKey2 = TWHDWalletGetPublicKeyFromExtended(zpub.get(), TWCoinTypeBitcoinGold, STRING("m/84'/156'/0'/0/2").get());
+    auto pubKey9 = TWHDWalletGetPublicKeyFromExtended(zpub.get(), TWCoinTypeBitcoinGold, STRING("m/84'/156'/0'/0/9").get());
 
     auto address2 = WRAP(TWAnyAddress, TWAnyAddressCreateWithPublicKey(pubKey2, TWCoinTypeBitcoinGold));
     auto address2String = WRAPS(TWAnyAddressDescription(address2.get()));
@@ -69,7 +70,7 @@ TEST(TWBitcoinGoldTxGeneration, TxGeneration) {
     // Setup input
     Proto::SigningInput input;
     input.set_coin_type(TWCoinTypeBitcoinGold);
-    input.set_hash_type(TWBitcoinSigHashTypeAll | TWBitcoinSigHashTypeForkBTG);
+    input.set_hash_type(hashTypeForCoin(TWCoinTypeBitcoinGold));
     input.set_amount(amount);
     input.set_byte_fee(1);
     input.set_to_address("btg1qmd6x5awe4t5fjhgntv0pngzdwajjg250wxdcs0");
@@ -99,27 +100,26 @@ TEST(TWBitcoinGoldTxGeneration, TxGeneration) {
     utxo0->mutable_out_point()->set_sequence(0xfffffffd);
 
     // Sign
-    auto txSinger = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
-    txSinger.transaction.lockTime = 0x00098971;
-    auto result = txSinger.sign();
+    auto txSigner = TransactionSigner<Transaction, TransactionBuilder>(std::move(input));
+    txSigner.transaction.lockTime = 0x00098971;
+    auto result = txSigner.sign();
 
-    ASSERT_TRUE(result) << result.error();;
+    ASSERT_TRUE(result) << result.error();
     auto signedTx = result.payload();
 
     Data serialized;
-    signedTx.encode(true, serialized);
-    ASSERT_EQ(hex(serialized),
-        "01000000"
-        "0001"
-        "01"
-            "5727794fa2b94aa22a226e206130524201ede9b50e032526e713c848493a890f" "00000000" "00" "fdffffff"
-        "02"
-            "8813000000000000" "160014db746a75d9aae8995d135b1e19a04d7765242a8f"
-            "a612000000000000" "160014ebae10950c8a35a506e0e265b928305233e802ab"
-        "02"
-            "483045022100bf1dcc37c2d3794e216b0b1cfcb04c7f49ef360ae941e46dc9b168f54f5447fe02205a0912bf3a3c0ac0e490c665bcde5239f553c013b2447a6fb5df6387ac029c8c41"
-            "2103e00b5dec8078d526fba090247bd92db6b67a4dd1953b788cea9b52de9471b8cf"
-        "71890900"
+    txSigner.encodeTx(signedTx, serialized);
+    ASSERT_EQ(hex(serialized), // printed using prettyPrintTransaction
+        "01000000" // version
+        "0001" // marker & flag
+        "01" // inputs
+            "5727794fa2b94aa22a226e206130524201ede9b50e032526e713c848493a890f"  "00000000"  "00"  ""  "fdffffff"
+        "02" // outputs
+            "8813000000000000"  "16"  "0014db746a75d9aae8995d135b1e19a04d7765242a8f"
+            "fb12000000000000"  "16"  "0014ebae10950c8a35a506e0e265b928305233e802ab"
+        // witness
+            "02"  "47"  "304402202b371b7cae885463c06357d1fc6ca95ab155613f212711bc7fb115500654946d0220430af77cbbb30afe7d7dcaccb72a55da802ee0a2bfea790dfe7c4e1a4c53fd7d41"  "21"  "03e00b5dec8078d526fba090247bd92db6b67a4dd1953b788cea9b52de9471b8cf"
+        "71890900" // nLockTime
     );
 }
             

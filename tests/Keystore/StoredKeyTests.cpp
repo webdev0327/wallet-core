@@ -24,6 +24,10 @@ const auto passwordString = "password";
 const auto password = TW::data(string(passwordString));
 const auto mnemonic = "team engine square letter hero song dizzy scrub tornado fabric divert saddle";
 const TWCoinType coinTypeBc = TWCoinTypeBitcoin;
+const TWCoinType coinTypeBnb = TWCoinTypeBinance;
+const TWCoinType coinTypeBsc = TWCoinTypeSmartChain;
+const TWCoinType coinTypeEth = TWCoinTypeEthereum;
+const TWCoinType coinTypeBscLegacy = TWCoinTypeSmartChainLegacy;
 
 TEST(StoredKey, CreateWithMnemonic) {
     auto key = StoredKey::createWithMnemonic("name", password, mnemonic);
@@ -65,7 +69,7 @@ TEST(StoredKey, CreateWithMnemonicAddDefaultAddress) {
     const Data& mnemo2Data = key.payload.decrypt(password);
     EXPECT_EQ(string(mnemo2Data.begin(), mnemo2Data.end()), string(mnemonic));
     EXPECT_EQ(key.accounts.size(), 1);
-    EXPECT_EQ(key.accounts[0].coin(), coinTypeBc);
+    EXPECT_EQ(key.accounts[0].coin, coinTypeBc);
     EXPECT_EQ(key.accounts[0].address, "bc1qturc268v0f2srjh4r2zu4t6zk4gdutqd5a6zny");
     EXPECT_EQ(hex(key.privateKey(coinTypeBc, password).bytes), "d2568511baea8dc347f14c4e0479eb8ebe29eb5f664ed796e755896250ffd11f");
 }
@@ -75,7 +79,7 @@ TEST(StoredKey, CreateWithPrivateKeyAddDefaultAddress) {
     auto key = StoredKey::createWithPrivateKeyAddDefaultAddress("name", password, coinTypeBc, privateKey);
     EXPECT_EQ(key.type, StoredKeyType::privateKey);
     EXPECT_EQ(key.accounts.size(), 1);
-    EXPECT_EQ(key.accounts[0].coin(), coinTypeBc);
+    EXPECT_EQ(key.accounts[0].coin, coinTypeBc);
     EXPECT_EQ(key.accounts[0].address, "bc1q375sq4kl2nv0mlmup3vm8znn4eqwu7mt6hkwhr");
     EXPECT_EQ(hex(key.privateKey(coinTypeBc, password).bytes), hex(privateKey));
 
@@ -112,25 +116,25 @@ TEST(StoredKey, AccountGetCreate) {
     // not exists, wallet nonnull, create
     const Account* acc3 = key.account(coinTypeBc, &wallet);
     EXPECT_TRUE(acc3 != nullptr);
-    EXPECT_EQ(acc3->coin(), coinTypeBc); 
+    EXPECT_EQ(acc3->coin, coinTypeBc); 
     EXPECT_EQ(key.accounts.size(), 1);
 
     // exists
     const Account* acc4 = key.account(coinTypeBc);
     EXPECT_TRUE(acc4 != nullptr);
-    EXPECT_EQ(acc4->coin(), coinTypeBc); 
+    EXPECT_EQ(acc4->coin, coinTypeBc); 
     EXPECT_EQ(key.accounts.size(), 1);
 
     // exists, wallet nonnull, not create
     const Account* acc5 = key.account(coinTypeBc, &wallet);
     EXPECT_TRUE(acc5 != nullptr);
-    EXPECT_EQ(acc5->coin(), coinTypeBc); 
+    EXPECT_EQ(acc5->coin, coinTypeBc); 
     EXPECT_EQ(key.accounts.size(), 1);
 
     // exists, wallet null, not create
     const Account* acc6 = key.account(coinTypeBc, nullptr);
     EXPECT_TRUE(acc6 != nullptr);
-    EXPECT_EQ(acc6->coin(), coinTypeBc); 
+    EXPECT_EQ(acc6->coin, coinTypeBc); 
     EXPECT_EQ(key.accounts.size(), 1);
 }
 
@@ -138,11 +142,29 @@ TEST(StoredKey, AddRemoveAccount) {
     auto key = StoredKey::createWithMnemonic("name", password, mnemonic);
     EXPECT_EQ(key.accounts.size(), 0);
 
-    const auto derivationPath = DerivationPath("m/84'/0'/0'/0/0");
-    key.addAccount("bc1q375sq4kl2nv0mlmup3vm8znn4eqwu7mt6hkwhr", derivationPath, "zpub6qbsWdbcKW9sC6shTKK4VEhfWvDCoWpfLnnVfYKHLHt31wKYUwH3aFDz4WLjZvjHZ5W4qVEyk37cRwzTbfrrT1Gnu8SgXawASnkdQ994atn");
-    EXPECT_EQ(key.accounts.size(), 1);
+    {
+        const auto derivationPath = DerivationPath("m/84'/0'/0'/0/0");
+        key.addAccount("bc1qaucw06s3agez8tyyk4zj9kt0q2934e3mcewdpf", coinTypeBc, derivationPath, "zpub6rxtad3SPT1C5GUDjPiKQ5oJN5DBeMbdUR7LrdYt12VbU7TBSpGUkdLvfVYGuj1N5edkDoZ3bu1fdN1HprQYfCBdsSH5CaAAygHGsanwtTe");
+        EXPECT_EQ(key.accounts.size(), 1);
+    }
+    {
+        const auto derivationPath = DerivationPath("m/714'/0'/0'/0/0");
+        key.addAccount("bnb1utrnnjym7ustgw7pgyvtmnxay4qmt3ahh276nu", coinTypeBnb, derivationPath, "");
+        key.addAccount("0x23b02dC8f67eD6cF8DCa47935791954286ffe7c9", coinTypeBsc, derivationPath, "");
+        EXPECT_EQ(key.accounts.size(), 3);
+    }
+    {
+        const auto derivationPath = DerivationPath("m/60'/0'/0'/0/0");
+        key.addAccount("0xC0d97f61A84A0708225F15d54978D628Fe2C5E62", coinTypeEth, derivationPath, "");
+        key.addAccount("0xC0d97f61A84A0708225F15d54978D628Fe2C5E62", coinTypeBscLegacy, derivationPath, "");
+        EXPECT_EQ(key.accounts.size(), 5);
+    }
 
     key.removeAccount(coinTypeBc);
+    key.removeAccount(coinTypeBnb);
+    key.removeAccount(coinTypeBsc);
+    key.removeAccount(coinTypeEth);
+    key.removeAccount(coinTypeBscLegacy);
     EXPECT_EQ(key.accounts.size(), 0);
 }
 
@@ -177,14 +199,14 @@ TEST(StoredKey, LoadNonexistent) {
 TEST(StoredKey, LoadLegacyPrivateKey) {
     const auto key = StoredKey::load(TESTS_ROOT + "/Keystore/Data/legacy-private-key.json");
     EXPECT_EQ(key.id, "3051ca7d-3d36-4a4a-acc2-09e9083732b0");
-    EXPECT_EQ(key.accounts[0].coin(), TWCoinTypeEthereum);
+    EXPECT_EQ(key.accounts[0].coin, TWCoinTypeEthereum);
     EXPECT_EQ(hex(key.payload.decrypt(TW::data("testpassword"))), "7a28b5ba57c53603b0b07b56bba752f7784bf506fa95edc395f5cf6c7514fe9d");
 }
 
 TEST(StoredKey, LoadLivepeerKey) {
     const auto key = StoredKey::load(TESTS_ROOT + "/Keystore/Data/livepeer.json");
     EXPECT_EQ(key.id, "70ea3601-ee21-4e94-a7e4-66255a987d22");
-    EXPECT_EQ(key.accounts[0].coin(), TWCoinTypeEthereum);
+    EXPECT_EQ(key.accounts[0].coin, TWCoinTypeEthereum);
     EXPECT_EQ(hex(key.payload.decrypt(TW::data("Radchenko"))), "09b4379d9a41a71d94ee36357bccb4d77b45e7fd9307e2c0f673dd54c0558c73");
 }
 
@@ -209,10 +231,10 @@ TEST(StoredKey, LoadLegacyMnemonic) {
     const auto mnemonic = string(reinterpret_cast<const char*>(data.data()));
     EXPECT_EQ(mnemonic, "ripple scissors kick mammal hire column oak again sun offer wealth tomorrow wagon turn back");
 
-    EXPECT_EQ(key.accounts[0].coin(), TWCoinTypeEthereum);
+    EXPECT_EQ(key.accounts[0].coin, TWCoinTypeEthereum);
     EXPECT_EQ(key.accounts[0].derivationPath.string(), "m/44'/60'/0'/0/0");
     EXPECT_EQ(key.accounts[0].address, "");
-    EXPECT_EQ(key.accounts[1].coin(), coinTypeBc);
+    EXPECT_EQ(key.accounts[1].coin, coinTypeBc);
     EXPECT_EQ(key.accounts[1].derivationPath.string(), "m/84'/0'/0'/0/0");
     EXPECT_EQ(key.accounts[1].address, "");
     EXPECT_EQ(key.accounts[1].extendedPublicKey, "zpub6r97AegwVxVbJeuDAWP5KQgX5y4Q6KyFUrsFQRn8yzSXrnmpwg1ZKHSWwECR1Kiqgr4h93WN5kdS48KC6hVFniuZHqVFXjULZZkCwurqyPn");
@@ -307,7 +329,7 @@ TEST(StoredKey, RemoveAccount) {
     EXPECT_EQ(key.accounts.size(), 2);
     key.removeAccount(TWCoinTypeEthereum);
     EXPECT_EQ(key.accounts.size(), 1);
-    EXPECT_EQ(key.accounts[0].coin(), coinTypeBc);
+    EXPECT_EQ(key.accounts[0].coin, coinTypeBc);
 }
 
 TEST(StoredKey, MissingAddress) {

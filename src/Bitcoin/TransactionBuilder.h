@@ -19,53 +19,13 @@ namespace TW::Bitcoin {
 class TransactionBuilder {
 public:
     /// Plans a transaction by selecting UTXOs and calculating fees.
-    static TransactionPlan plan(const Bitcoin::Proto::SigningInput& input) {
-        auto plan = TransactionPlan();
-        plan.amount = input.amount();
-
-        auto output_size = 2;
-        auto calculator =
-            UnspentCalculator::getCalculator(static_cast<TWCoinType>(input.coin_type()));
-        auto unspentSelector = UnspentSelector(calculator);
-        if (input.use_max_amount() && UnspentSelector::sum(input.utxo()) == plan.amount) {
-            output_size = 1;
-            Amount newAmount = 0;
-            auto input_size = 0;
-
-            for (auto utxo : input.utxo()) {
-                if (utxo.amount() >
-                    unspentSelector.calculator.calculateSingleInput(input.byte_fee())) {
-                    input_size++;
-                    newAmount += utxo.amount();
-                }
-            }
-
-            plan.amount = newAmount - unspentSelector.calculator.calculate(input_size, output_size,
-                                                                           input.byte_fee());
-            plan.amount = std::max(Amount(0), plan.amount);
-        }
-
-        plan.utxos =
-            unspentSelector.select(input.utxo(), plan.amount, input.byte_fee(), output_size);
-        plan.fee =
-            unspentSelector.calculator.calculate(plan.utxos.size(), output_size, input.byte_fee());
-
-        plan.availableAmount = UnspentSelector::sum(plan.utxos);
-
-        if (plan.amount > plan.availableAmount - plan.fee) {
-            plan.amount = std::max(Amount(0), plan.availableAmount - plan.fee);
-        }
-
-        plan.change = plan.availableAmount - plan.amount - plan.fee;
-
-        return plan;
-    }
+    static TransactionPlan plan(const Bitcoin::Proto::SigningInput& input);
 
     /// Builds a transaction by selecting UTXOs and calculating fees.
     template <typename Transaction>
     static Transaction build(const TransactionPlan& plan, const std::string& toAddress,
                              const std::string& changeAddress, enum TWCoinType coin) {
-        auto lockingScriptTo = Script::buildForAddress(toAddress, coin);
+        auto lockingScriptTo = Script::lockScriptForAddress(toAddress, coin);
         if (lockingScriptTo.empty()) {
             return {};
         }
@@ -74,7 +34,7 @@ public:
         tx.outputs.push_back(TransactionOutput(plan.amount, lockingScriptTo));
 
         if (plan.change > 0) {
-            auto lockingScriptChange = Script::buildForAddress(changeAddress, coin);
+            auto lockingScriptChange = Script::lockScriptForAddress(changeAddress, coin);
             tx.outputs.push_back(TransactionOutput(plan.change, lockingScriptChange));
         }
 

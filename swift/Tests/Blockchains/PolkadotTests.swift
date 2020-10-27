@@ -4,7 +4,7 @@
 // terms governing use, modification, and redistribution, is contained in the
 // file LICENSE at the root of the source code distribution tree.
 
-import TrustWalletCore
+import WalletCore
 import XCTest
 
 class PolkadotTests: XCTestCase {
@@ -30,5 +30,33 @@ class PolkadotTests: XCTestCase {
         XCTAssertEqual(pubkey.data.hexString, "53d82211c4aadb8c67e1930caef2058a93bc29d7af86bf587fba4aa3b1515037")
         XCTAssertEqual(address.description, addressFromString.description)
         XCTAssertEqual(address.data, pubkey.data)
+    }
+
+    func testSigningBond() {
+        // https://polkadot.subscan.io/extrinsic/0x5ec2ec6633b4b6993d9cf889ef42c457a99676244dc361a9ae17935d331dc39a
+        // real key in 1p test
+        let wallet = HDWallet.test
+        let key = wallet.getKey(coin: .polkadot, derivationPath: "m/44'/354'/0'")
+        let address = CoinType.polkadot.deriveAddress(privateKey: key)
+
+        let genesisHash = Data(hexString: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3")!
+        let input = PolkadotSigningInput.with {
+            $0.genesisHash = genesisHash
+            $0.blockHash = genesisHash
+            $0.nonce = 0
+            $0.specVersion = 17
+            $0.network = .polkadot
+            $0.transactionVersion = 3
+            $0.privateKey = key.data
+            $0.stakingCall.bond = PolkadotStaking.Bond.with {
+                $0.controller = address
+                $0.rewardDestination = .staked
+                // 0.01
+                $0.value = Data(hexString: "0x02540be400")!
+            }
+        }
+        let output: PolkadotSigningOutput = AnySigner.sign(input: input, coin: .polkadot)
+
+        XCTAssertEqual(output.encoded.hexString, "3902848d96660f14babe708b5e61853c9f5929bc90dd9874485bf4d6dc32d3e6f22eaa00a559867d1304cc95bac7cfe5d1b2fd49aed9f43c25c7d29b9b01c1238fa1f6ffef34b9650e42325de41e20fd502af7b074c67a9ec858bd9a1ba6d4212e3e0d0f00000007008d96660f14babe708b5e61853c9f5929bc90dd9874485bf4d6dc32d3e6f22eaa0700e40b540200")
     }
 }

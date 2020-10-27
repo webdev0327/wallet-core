@@ -11,6 +11,7 @@
 #include "PrivateKey.h"
 #include "HexCoding.h"
 #include "HDWallet.h"
+#include "Coin.h"
 
 #include <iostream>
 #include <vector>
@@ -45,7 +46,7 @@ bool Keys::newKey(const string& coinid, string& res) {
     HDWallet newWallet(256, "");
 
     DerivationPath derivationPath = DerivationPath(coin.derivPath);
-    PrivateKey key = newWallet.getKey(derivationPath);
+    PrivateKey key = newWallet.getKey(TWCoinType(coin.c), derivationPath);
     privateKeyToResult(key, res);
     return true;
 }
@@ -134,6 +135,19 @@ bool Keys::dumpDP(const string& coinid, string& res) {
     return true;
 }
 
+bool Keys::dumpXpub(const string& coinid, string& res) {
+    assert(_currentMnemonic.length() > 0); // a mnemonic is always set
+    Coin coin;
+    if (!_coins.findCoin(coinid, coin)) { return false; }
+    TWCoinType ctype = (TWCoinType)coin.c;
+    TWPurpose purpose = TW::purpose(ctype);
+    TWHDVersion xpubVersion = TW::xpubVersion(ctype);
+    HDWallet wallet(_currentMnemonic, "");
+    string xpub = wallet.getExtendedPublicKey(purpose, ctype, xpubVersion);
+    res = xpub;
+    return true;
+}
+
 bool Keys::priDP(const string& coinid, const string& dp, string& res) {
     // coin
     Coin coin;
@@ -152,7 +166,7 @@ bool Keys::priDP(const string& coinid, const string& dp, string& res) {
     _out << "Using derivation path \"" << dp2 << "\" for coin " << coin.name << endl;
 
     HDWallet wallet(_currentMnemonic, "");
-    PrivateKey priKey = wallet.getKey(dp3);
+    PrivateKey priKey = wallet.getKey(TWCoinType(coin.c), dp3);
 
     privateKeyToResult(priKey, res);
     return true;

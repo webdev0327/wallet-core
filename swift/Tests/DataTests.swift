@@ -4,7 +4,7 @@
 // terms governing use, modification, and redistribution, is contained in the
 // file LICENSE at the root of the source code distribution tree.
 
-import TrustWalletCore
+import WalletCore
 import XCTest
 
 class DataTests: XCTestCase {
@@ -14,5 +14,11 @@ class DataTests: XCTestCase {
         let data = Data.fromTWData(twdata)
 
         XCTAssertEqual(Array(data), bytes)
+    }
+
+    func testOddLength() {
+        XCTAssertNil(Data(hexString: "0x0"))
+        XCTAssertNil(Data(hexString: "0x28fa6ae00"))
+        XCTAssertNil(Data(hexString: "28fa6ae00"))
     }
 }

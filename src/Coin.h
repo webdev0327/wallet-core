@@ -19,12 +19,12 @@
 #include <TrustWalletCore/TWPurpose.h>
 
 #include <string>
-#include <set>
+#include <vector>
 
 namespace TW {
 
 // Return the set of supported coin types.
-std::set<TWCoinType> getCoinTypes();
+std::vector<TWCoinType> getCoinTypes();
 
 /// Validates an address for a particular coin.
 bool validateAddress(TWCoinType coin, const std::string& address);
@@ -80,12 +80,22 @@ enum TWHRP hrp(TWCoinType coin);
 // Note: use output parameter to avoid unneeded copies
 void anyCoinSign(TWCoinType coinType, const Data& dataIn, Data& dataOut);
 
+uint32_t slip44Id(TWCoinType coin);
+
 std::string anySignJSON(TWCoinType coinType, const std::string& json, const Data& key);
 
 bool supportsJSONSigning(TWCoinType coinType);
 
+void anyCoinEncode(TWCoinType coinType, const Data& dataIn, Data& dataOut);
+
+void anyCoinDecode(TWCoinType coinType, const Data& dataIn, Data& dataOut);
+
 void anyCoinPlan(TWCoinType coinType, const Data& dataIn, Data& dataOut);
 
+// Return coins handled by the same dispatcher as the given coin (mostly for testing)
+const std::vector<TWCoinType> getSimilarCoinTypes(TWCoinType coinType);
+
+// Contains only simple types.
 struct CoinInfo {
     const char* id;
     const char* name;
@@ -94,7 +104,7 @@ struct CoinInfo {
     TWCurve curve;
     TWHDVersion xpubVersion;
     TWHDVersion xprvVersion;
-    DerivationPath derivationPath;
+    const char* derivationPath;
     TWPublicKeyType publicKeyType;
     byte staticPrefix;
     byte p2pkhPrefix;
@@ -106,6 +116,7 @@ struct CoinInfo {
     int decimals;
     const char* explorerTransactionUrl;
     const char* explorerAccountUrl;
+    uint32_t slip44;
 };
 
 } // namespace TW

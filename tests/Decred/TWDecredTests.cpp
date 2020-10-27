@@ -28,18 +28,18 @@ TEST(Decred, ExtendedKeys) {
 
 TEST(Decred, DerivePubkeyFromDpub) {
     auto dpub = STRING("dpubZFUmm9oh5zmQkR2Tr2AXS4tCkTWg4B27SpCPFkapZrrAqgU1EwgEFgrmi6EnLGXhak86yDHhXPxFAnGU58W5S4e8NCKG1ASUVaxwRqqNdfP");
-    auto pubKey0 = TWHDWalletGetPublicKeyFromExtended(dpub.get(), STRING("m/44'/42'/0'/0/0").get());
+    auto pubKey0 = TWHDWalletGetPublicKeyFromExtended(dpub.get(), TWCoinTypeDecred, STRING("m/44'/42'/0'/0/0").get());
     auto address0 = WRAPS(TWCoinTypeDeriveAddressFromPublicKey(TWCoinTypeDecred, pubKey0));
 
     assertStringsEqual(address0, "DsksmLD2wDoA8g8QfFvm99ASg8KsZL8eJFd");
 }
 
 TEST(Decred, Lockscripts) {
-    auto script = WRAP(TWBitcoinScript, TWBitcoinScriptBuildForAddress(STRING("Dcur2mcGjmENx4DhNqDctW5wJCVyT3Qeqkx").get(), TWCoinTypeDecred));
+    auto script = WRAP(TWBitcoinScript, TWBitcoinScriptLockScriptForAddress(STRING("Dcur2mcGjmENx4DhNqDctW5wJCVyT3Qeqkx").get(), TWCoinTypeDecred));
     auto scriptData = WRAPD(TWBitcoinScriptData(script.get()));
     assertHexEqual(scriptData, "a914f5916158e3e2c4551c1796708db8367207ed13bb87");
 
-    auto script2 = WRAP(TWBitcoinScript, TWBitcoinScriptBuildForAddress(STRING("DsfD7KYsJtRraYXPZM61ui7779oYJCakYvH").get(), TWCoinTypeDecred));
+    auto script2 = WRAP(TWBitcoinScript, TWBitcoinScriptLockScriptForAddress(STRING("DsfD7KYsJtRraYXPZM61ui7779oYJCakYvH").get(), TWCoinTypeDecred));
     auto scriptData2 = WRAPD(TWBitcoinScriptData(script2.get()));
     assertHexEqual(scriptData2, "76a9149c417596dea6570f8e546674555b5ce5087ce2c288ac");
 }
